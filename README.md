@@ -3,7 +3,7 @@
 Skaner żył z mini projektorem to urządzenie medyczne, które umożliwia wizualizację wzorca naczyń krwionośnych pod skórą w czasie rzeczywistym. Jego głównym celem jest ułatwienie procedur medycznych wymagających precyzyjnego dostępu do żył, takich jak pobieranie krwi, podawanie leków dożylnych czy zakładanie wenflonów, zwłaszcza w przypadkach trudnej widoczności naczyń.
 
 ## Jak działa urządzenie?
-# 1. Wykrywanie naczyń krwionośnych
+### 1. Wykrywanie naczyń krwionośnych
 Urządzenie wykorzystuje technologię podczerwieni (IR), która pozwala na identyfikację wzorca żył znajdujących się pod skórą. Dzieje się to dzięki różnicom w absorpcji światła podczerwonego między hemoglobiną w naczyniach krwionośnych a otaczającymi tkankami. Kamera IR rejestruje obraz skóry, a zaawansowane algorytmy przetwarzają dane, aby uwidocznić przebieg żył.
 
 ### 2. Projekcja wzorca żył
