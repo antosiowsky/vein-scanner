@@ -1,41 +1,48 @@
 # --- Parametry do łatwej podmiany ---
 IMG_PATH = "anton1.png"           # np. "anton1.png", "obraz2.jpg"
-CLAHE_CLIP_LIMIT = 12.0            # np. 2.0, 4.0, 8.0
-CLAHE_TILE_GRID_SIZE = (12, 12)   # np. (8,8), (10,10), (16,16)
-MEDIAN_BLUR_KSIZE = 7              # np. 3, 5, 7 (musi być nieparzysty)
+CLAHE_CLIP_LIMIT = 12.0           # np. 2.0, 4.0, 8.0
+CLAHE_TILE_GRID_SIZE = 12         # pojedyncza liczba, np. 8, 10, 16
+MEDIAN_BLUR_KSIZE = 7             # np. 3, 5, 7 (musi być nieparzysty)
+CLAHE_ITERATIONS = 1              # liczba iteracji CLAHE
 # ------------------------------------
 
 import cv2
 import numpy as np
 
-# Wczytanie obrazu w skali szarości (np. z kamery mono)
-img_gray = cv2.imread(IMG_PATH, cv2.IMREAD_GRAYSCALE)
+class ImageProcessing:
+    @staticmethod
+    def apply_clahe(frame_img, for_value, clip_limit, tile_grid_size, median_ksize):
+        """Apply CLAHE processing to the given frame."""
+        lab_img = cv2.cvtColor(frame_img, cv2.COLOR_BGR2LAB)
+        l_channel, a_channel, b_channel = cv2.split(lab_img)
 
-# Zamiana na obraz 3-kanałowy (potrzebne do LAB)
+        for _ in range(int(for_value)):
+            clahe = cv2.createCLAHE(clipLimit=float(clip_limit), tileGridSize=(int(tile_grid_size), int(tile_grid_size)))
+            l_channel = clahe.apply(l_channel)
+
+        lab_img = cv2.merge((l_channel, a_channel, b_channel))
+        median_lab_img = cv2.medianBlur(lab_img, 3)
+
+        return cv2.cvtColor(median_lab_img, cv2.COLOR_LAB2BGR)
+
+img_gray = cv2.imread(IMG_PATH, cv2.IMREAD_GRAYSCALE)
 img_bgr = cv2.cvtColor(img_gray, cv2.COLOR_GRAY2BGR)
 
-# Konwersja do przestrzeni LAB
-img_lab = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2LAB)
-l, a, b = cv2.split(img_lab)
+# Image processing
+processed_img = ImageProcessing.apply_clahe(
+    frame_img=img_bgr,
+    for_value=CLAHE_ITERATIONS,
+    clip_limit=CLAHE_CLIP_LIMIT,
+    tile_grid_size=CLAHE_TILE_GRID_SIZE,
+    median_ksize=MEDIAN_BLUR_KSIZE
+)
 
-# CLAHE na kanale L
-clahe = cv2.createCLAHE(clipLimit=CLAHE_CLIP_LIMIT, tileGridSize=CLAHE_TILE_GRID_SIZE)
-l_clahe = clahe.apply(l)
+# Show results
+resize_gray = cv2.resize(img_gray, (640, 360))
+resize_img = cv2.resize(processed_img, (640, 360))
 
-# Median blur na kanale L
-l_median = cv2.medianBlur(l_clahe, ksize=MEDIAN_BLUR_KSIZE)
+cv2.imshow("Original", resize_gray)
+cv2.imshow("LAB CLAHE + Median", resize_img)
 
-# Połączenie kanałów i powrót do BGR
-lab_clahe = cv2.merge([l_median, a, b])
-bgr_clahe = cv2.cvtColor(lab_clahe, cv2.COLOR_LAB2BGR)
-
-# Zamiana na odcienie czerwieni (mapowanie na colormap)
-red_colormap = cv2.applyColorMap(l_median, cv2.COLORMAP_HOT)
-
-# Wyświetlenie wyników
-cv2.imshow("Oryginał", img_gray)
-cv2.imshow("LAB CLAHE + Median", bgr_clahe)
-cv2.imshow("Czerwony Colormap", red_colormap)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
-
