@@ -2,7 +2,6 @@ import cv2
 import json
 import os
 import logging
-import subprocess
 
 # ------------------ ImageProcessing CLASS ------------------
 class ImageProcessing:
@@ -53,7 +52,6 @@ class ParamSetter:
                 json.dump(default_params, config_file)
             logging.info(f"Default parameters created in {self.DEFAULT_CONFIG_FILE_PATH}")
             return default_params
-
     def save_params_to_file(self):
         """Save current parameters to a JSON file."""
         params = {
@@ -102,7 +100,6 @@ def main():
     window_name = "CLAHE Processed Image"
     cv2.namedWindow(window_name, cv2.WND_PROP_FULLSCREEN)
     cv2.setWindowProperty(window_name, cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
-
     while True:
         ret, frame = cap.read()
         if not ret:
@@ -119,11 +116,9 @@ def main():
             param_setter.clahe_tile_grid_size
         )
 
-        # Resize before display
-        resized_frame = cv2.resize(processed_frame, (640, 360))
-
-        cv2.imwrite("/tmp/processed_frame.jpg", resized_frame)
-        subprocess.run(["sudo", "fbi", "-T", "1", "-d", "/dev/fb0", "-noverbose", "-a", "/tmp/processed_frame.jpg"])
+        # Resize to 1920x1080 before display
+        resized_frame = cv2.resize(processed_frame, (1920, 1080))
+        cv2.imshow(window_name, resized_frame)
 
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
