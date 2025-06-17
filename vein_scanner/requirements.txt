@@ -1,0 +1,7 @@
+# requirements.txt
+opencv-python
+gpiod
+adafruit-blinka
+adafruit-circuitpython-ssd1306
+Pillow
+lgpio

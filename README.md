@@ -1,12 +1,12 @@
-# 🔬 Vein Scanner with Real-Time Vein Pattern Projection
+# Vein Scanner with Real-Time Vein Pattern Projection
 
 > 🚧 **This project is currently in development. Stay tuned for updates!**
 
-## 🎯 Project Goal
+## Project Goal
 
 The Vein Scanner with a mini projector is a medical device designed to visualize the pattern of blood vessels under the skin in real time. Its main purpose is to assist in medical procedures that require precise vein access, such as drawing blood, administering intravenous medications, or inserting cannulas—especially in cases where veins are difficult to locate.
 
-## 🛠️ How It Works
+## How It Works
 
 ### 1. **Vein Detection**
 The device utilizes infrared (IR) technology to detect the vein pattern beneath the skin. This is achieved by exploiting the difference in IR light absorption between hemoglobin in the blood vessels and the surrounding tissue. An IR camera captures an image of the skin, and advanced algorithms process the data to highlight the vein network.
@@ -14,21 +14,11 @@ The device utilizes infrared (IR) technology to detect the vein pattern beneath 
 ### 2. **Vein Pattern Projection**
 Once the veins are identified, the processed image is sent to a built-in mini projector. The projector displays the vein pattern directly onto the patient’s skin at the puncture site, allowing medical personnel to see the exact vein location in real time.
 
-### 3. **Portability and Convenience**
-The device is compact, battery-powered, and portable—making it suitable for use in hospitals, clinics, and field conditions.
-
-## 💡 Key Use Cases
+## Key Use Cases
 
 - **Patients with difficult vein access**: children, obese individuals, dehydrated patients, the elderly, and chronically ill individuals.
 - **Medical procedures**: blood draws, IV insertion, and intravenous infusions.
 - **Education and training**: a teaching tool for medical and nursing students to understand vein anatomy and practice injection techniques.
-
-## ✅ Why Use This Device?
-
-- **Improved accuracy**: Reduces the number of puncture attempts, minimizing patient discomfort and staff stress.
-- **Time-saving**: Helps quickly locate veins, especially in emergencies.
-- **Enhanced safety**: Fewer puncture attempts reduce the risk of infection and complications.
-- **Better learning outcomes**: Assists students and trainees in learning vein anatomy and improving injection skills.
 
 ## 📦 Components
 
