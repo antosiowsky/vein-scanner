@@ -3,76 +3,83 @@
 import time
 import logging
 import os
+import threading
 
 from camera_processor import ParamSetter, CameraThread
 from menu_system import MenuSystem
+from web_server import WebServerThread
 
 class VeinScannerApp:
     def __init__(self):
         logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+        self._shutdown_event = threading.Event()
         
-        # --- KEY CHANGE: Initialize Camera and Parameters first ---
-        logging.info("Initializing camera and parameters...")
         self.param_setter = ParamSetter()
         self.param_setter.load_params_from_file()
-
-        # The CameraThread is now a long-lived background process.
-        # It's created once and runs for the lifetime of the app.
-        self.camera_thread = CameraThread(self.param_setter)
         
-        # --- KEY CHANGE: Pass camera's control methods directly to the menu ---
-        # The menu will now talk directly to the camera thread to start/stop
-        # the *activity* of scanning, not the thread itself.
+        self.camera_thread = CameraThread(self.param_setter)
+        self.web_server_thread = None
+
         self.menu = MenuSystem(
             param_setter=self.param_setter,
             start_scan_callback=self.camera_thread.start_processing,
-            stop_scan_callback=self.camera_thread.stop_processing, 
+            stop_scan_callback=self.camera_thread.stop_processing,
+            start_web_server_callback=self.start_web_server,
+            stop_web_server_callback=self.stop_web_server,
             shutdown_callback=self.shutdown
         )
-        
         logging.info("Vein Scanner Application Initialized.")
 
-    def run(self):
-        """Main loop of the application."""
-        logging.info("Starting background camera thread...")
-        self.camera_thread.start() # Start the background thread
+    # --- NEW METHODS to manage the web server ---
+    def start_web_server(self):
+        if self.web_server_thread and self.web_server_thread.is_alive():
+            logging.warning("Web server is already running.")
+            return
+        logging.info("Starting web server thread...")
+        self.web_server_thread = WebServerThread()
+        self.web_server_thread.start()
+        self.camera_thread.set_web_server(self.web_server_thread) # Link it to the camera
+
+    def stop_web_server(self):
+        if not self.web_server_thread or not self.web_server_thread.is_alive():
+            logging.warning("Web server is not running.")
+            return
+        logging.info("Stopping web server thread...")
+        self.web_server_thread.stop()
+        self.web_server_thread.join(timeout=3.0)
+        self.camera_thread.set_web_server(None) # Unlink from camera
+        self.web_server_thread = None
         
+    def run(self):
+        logging.info("Starting background camera thread...")
+        self.camera_thread.start()
         try:
-            # The main thread just needs to stay alive to handle shutdown.
-            # All work is done in the camera and menu/GPIO threads.
-            while True:
-                time.sleep(1)
+            self._shutdown_event.wait()
         except KeyboardInterrupt:
             logging.info("Program interrupted by user (Ctrl+C).")
         finally:
             self.cleanup()
 
     def shutdown(self):
-        """Callback for shutting down the Pi."""
-        logging.info("Shutdown requested. Initiating cleanup...")
-        self.cleanup()
-        logging.info("Shutting down the system.")
-        # os.system("sudo shutdown -h now") # Uncomment for production
-        exit()
-
+        logging.info("Shutdown requested from menu. Signaling main loop to exit...")
+        self._shutdown_event.set()
+    
     def cleanup(self):
         logging.info("Starting application cleanup...")
-        # Clean up the menu system first (e.g., GPIO pins)
-        if self.menu:
-            self.menu.cleanup()
-            
-        # Stop and join the camera thread
+        
+        # --- NEW: Stop web server during cleanup ---
+        self.stop_web_server()
+
         if self.camera_thread and self.camera_thread.is_alive():
             logging.info("Stopping camera thread...")
             self.camera_thread.stop()
-            self.camera_thread.join(timeout=2.0)
-            if self.camera_thread.is_alive():
-                logging.warning("Camera thread did not stop in time.")
+            self.camera_thread.join(timeout=3.0)
         
-        logging.info("Application cleanup complete. Exiting.")
-
-# Removed start_scan and stop_scan methods as they are no longer needed here.
-# Their logic has moved into the CameraThread.
+        if self.menu: self.menu.cleanup()
+        
+        if self._shutdown_event.is_set():
+            logging.info("Cleanup complete. Executing system shutdown.")
+            # os.system("sudo shutdown -h now")
 
 if __name__ == "__main__":
     app = VeinScannerApp()
