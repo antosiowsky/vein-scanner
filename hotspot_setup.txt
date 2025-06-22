@@ -1,0 +1,11 @@
+List the connections:
+nmcli con show
+
+Create the hotspot:
+nmcli con add type wifi ifname wlan0 con-name VeinScannerAP ssid VeinScannerAP wifi-sec.key-mgmt wpa-psk wifi-sec.psk "raspberry" ipv4.method shared ipv4.addresses 192.168.4.1/24
+
+Activate the new hotspot:
+nmcli con up VeinScannerAP
+
+Change in options from client to hotspot and 'sudo reboot'
+The hotspot ip is 192.168.4.1
